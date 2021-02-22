@@ -24,7 +24,12 @@ spring:
     time-zone:   GMT+8
   aop:
     proxy-target-class: true
+  freemarker:
+    charset: utf-8
+    suffix: .ftl
+    template-loader-path: classpath:/templates/mybatisCodeGenerator
 
+#打印mybatis的sql
 logging:
   level:
     com.lyf.mapper: trace

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.config.*;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
+import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 
 import java.util.Scanner;
 
@@ -33,21 +34,26 @@ public class CodeGenerator {
 
     public static void main(String[] args) {
         // 代码生成器
-        AutoGenerator autoGenerator = new AutoGenerator();
-
+        AutoGenerator ag = new AutoGenerator();
+//        FreemarkerTemplateEngine freemarkerTemplateEngine=new FreemarkerTemplateEngine();
+//        Properties properties=new Properties();
+//        properties.setProperty(FreemarkerTemplateEngine)
+//        freemarkerTemplateEngine.init()
+        ag.setTemplateEngine(new FreemarkerTemplateEngine());
         String projectPath = System.getProperty("user.dir");
-
+        System.out.println(projectPath);
         //自定义模板路径
         TemplateConfig templateConfig = new TemplateConfig()
-                .setEntity(projectPath + "/pure-common/src/main/resources/codeGenerator/templates/entity.java")
-                .setMapper(projectPath + "/pure-common/src/main/resources/codeGenerator/templates/mapper.java")
-                .setXml(projectPath + "/pure-common/src/main/resources/codeGenerator/templates/mapper.xml")
-                .setService(projectPath + "/pure-common/src/main/resources/codeGenerator/templates/service.java.java")
-                .setServiceImpl(projectPath + "/pure-common/src/main/resources/codeGenerator/templates/serviceImpl.java")
-                .setController(projectPath + "/pure-common/src/main/resources/codeGenerator/templates/controller.java");
+                .setEntity(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/entity.java")
+//                .setEntity("templates/entity.java")
+                .setMapper(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/mapper.java")
+                .setXml(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/mapper.xml")
+                .setService(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/service.java")
+                .setServiceImpl(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/serviceImpl.java")
+                .setController(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/controller.java");
 
         //配置自定义模板
-        autoGenerator.setTemplate(templateConfig);
+        ag.setTemplate(templateConfig);
 
         // 全局配置
         GlobalConfig gc = new GlobalConfig();
@@ -61,16 +67,16 @@ public class CodeGenerator {
         gc.setServiceName("%Service");
         //开启实体属性Swagger2注解
         gc.setSwagger2(true);
-        autoGenerator.setGlobalConfig(gc);
+        ag.setGlobalConfig(gc);
 
         // 数据源配置
-        DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setUrl("jdbc:mysql:///mybatis?characterEncoding=utf-8&useSSL=false&useUnicode=true&autoReconnect=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true");
-        dataSourceConfig.setDriverName("com.mysql.cj.jdbc.Driver");
-        dataSourceConfig.setUsername("root");
-        dataSourceConfig.setPassword("root");
-        dataSourceConfig.setDbType(DbType.MYSQL);
-        autoGenerator.setDataSource(dataSourceConfig);
+        DataSourceConfig dsc = new DataSourceConfig();
+        dsc.setUrl("jdbc:mysql:///mybatis?characterEncoding=utf-8&useSSL=false&useUnicode=true&autoReconnect=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true");
+        dsc.setDriverName("com.mysql.cj.jdbc.Driver");
+        dsc.setUsername("root");
+        dsc.setPassword("root");
+        dsc.setDbType(DbType.MYSQL);
+        ag.setDataSource(dsc);
 
         // 包配置
         PackageConfig pc = new PackageConfig();
@@ -80,28 +86,44 @@ public class CodeGenerator {
         pc.setMapper("mapper");
         pc.setService("service");
         pc.setController("controller");
-        autoGenerator.setPackageInfo(pc);
+        ag.setPackageInfo(pc);
 
+
+     /*   // 如果模板引擎是 freemarker
+        String templatePath = "/templates/mapper.xml.ftl";
+
+        // 自定义输出配置
+        List<FileOutConfig> focList = new ArrayList<>();
+        // 自定义配置会被优先输出
+        focList.add(new FileOutConfig(templatePath) {
+            @Override
+            public String outputFile(TableInfo tableInfo) {
+                // 自定义输出文件名 ， 如果你 Entity 设置了前后缀、此处注意 xml 的名称会跟着发生变化！！
+                return projectPath + "/src/main/resources/mapper/" + pc.getModuleName()
+                        + "/" + tableInfo.getEntityName() + "Mapper" + StringPool.DOT_XML;
+            }
+        });*/
 
         // 策略配置
         StrategyConfig strategy = new StrategyConfig();
-        // 对应哪些表生成代码
-        strategy.setInclude(scanner("表名，多个英文逗号分割").split(","));
+        // 要映射的表名
+        strategy.setInclude(scanner("表名，如有多个请用英文逗号分割").split(","));
+        // 生成实体类时去掉表前缀_
+        strategy.setTablePrefix(pc.getModuleName() + "_");
+        // 表名映射到实体类名的命名策略
+        strategy.setNaming(NamingStrategy.underline_to_camel);
+        // 字段名映射到实体类属性名的命名策略
+        strategy.setColumnNaming(NamingStrategy.underline_to_camel);
         // 公共父类
 //        strategy.setSuperEntityClass("你自己的父类实体,没有就不用设置!");
 //        strategy.setSuperControllerClass("你自己的父类控制器,没有就不用设置!");
-        // 表映射到实体的命名策略
-        strategy.setNaming(NamingStrategy.underline_to_camel);
-        // 字段映射到实体属性的命名策略
-        strategy.setColumnNaming(NamingStrategy.underline_to_camel);
-        // 生成实体时去掉表前缀
-        strategy.setTablePrefix(pc.getModuleName() + "_");
-        // lombok 模型 @Accessors(chain = true) setter链式操作
+        // 生成lombok注解
         strategy.setEntityLombokModel(true);
         // restful api风格控制器
         strategy.setRestControllerStyle(true);
-        autoGenerator.setStrategy(strategy);
-        autoGenerator.execute();
+
+        ag.setStrategy(strategy);
+        ag.execute();
     }
 
 }

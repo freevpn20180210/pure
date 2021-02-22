@@ -150,4 +150,5 @@ public class MainConfig implements WebMvcConfigurer, WebServerFactoryCustomizer<
     public ServerEndpointExporter serverEndpointExporter() {
         return new ServerEndpointExporter();
     }
+
 }
