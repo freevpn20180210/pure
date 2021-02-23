@@ -39,18 +39,18 @@ public class CodeGenerator {
 //        Properties properties=new Properties();
 //        properties.setProperty(FreemarkerTemplateEngine)
 //        freemarkerTemplateEngine.init()
+
         ag.setTemplateEngine(new FreemarkerTemplateEngine());
         String projectPath = System.getProperty("user.dir");
         System.out.println(projectPath);
         //自定义模板路径
         TemplateConfig templateConfig = new TemplateConfig()
-                .setEntity(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/entity.java")
-//                .setEntity("templates/entity.java")
-                .setMapper(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/mapper.java")
-                .setXml(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/mapper.xml")
-                .setService(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/service.java")
-                .setServiceImpl(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/serviceImpl.java")
-                .setController(projectPath + "/pure-common/src/main/resources/templates/mybatisCodeGenerator/controller.java");
+                .setEntity("/templates/mybatisCodeGenerator/entity.java")
+                .setMapper("/templates/mybatisCodeGenerator/mapper.java")
+                .setXml("/templates/mybatisCodeGenerator/mapper.xml")
+                .setService("/templates/mybatisCodeGenerator/service.java")
+                .setServiceImpl("/templates/mybatisCodeGenerator/serviceImpl.java")
+                .setController("/templates/mybatisCodeGenerator/controller.java");
 
         //配置自定义模板
         ag.setTemplate(templateConfig);
