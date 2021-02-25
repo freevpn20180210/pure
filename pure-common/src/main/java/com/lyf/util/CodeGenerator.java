@@ -13,6 +13,14 @@ import java.util.Scanner;
 // 演示例子，执行 main 方法控制台输入模块表名回车自动生成对应项目目录中
 public class CodeGenerator {
 
+    private static String url = "jdbc:mysql:///mybatis?characterEncoding=utf-8&useSSL=false&useUnicode=true&autoReconnect=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true";
+    private static String driverName = "com.mysql.cj.jdbc.Driver";
+    private static String userName = "root";
+    private static String password = "root";
+    private static DbType dbType = DbType.MYSQL;
+
+    private static String parentPackage = "com.lyf";
+
     /**
      * <p>
      * 读取控制台内容
@@ -20,9 +28,9 @@ public class CodeGenerator {
      */
     public static String scanner(String tip) {
         Scanner scanner = new Scanner(System.in);
-        StringBuilder help = new StringBuilder();
-        help.append("请输入" + tip + "：");
-        System.out.println(help.toString());
+        StringBuilder sb = new StringBuilder();
+        sb.append("请输入" + tip + "：");
+        System.out.println(sb.toString());
         if (scanner.hasNext()) {
             String ipt = scanner.next();
             if (StringUtils.isNotBlank(ipt)) {
@@ -35,14 +43,26 @@ public class CodeGenerator {
     public static void main(String[] args) {
         // 代码生成器
         AutoGenerator ag = new AutoGenerator();
-//        FreemarkerTemplateEngine freemarkerTemplateEngine=new FreemarkerTemplateEngine();
-//        Properties properties=new Properties();
-//        properties.setProperty(FreemarkerTemplateEngine)
-//        freemarkerTemplateEngine.init()
 
+        //全局配置
+        GlobalConfig gc = new GlobalConfig();
+        //输出文件夹
+        gc.setOutputDir(System.getProperty("user.dir") + "/pure-module1/src/main/java");
+        //设置作者名
+        gc.setAuthor("lyf");
+        //生成后是否打开资源管理器--否
+        gc.setOpen(false);
+        //重新生成时是否覆盖原文件--是
+        gc.setFileOverride(true);
+        //去掉service接口的首字母I
+        gc.setServiceName("%Service");
+        //开启实体属性Swagger2注解
+        gc.setSwagger2(true);
+        ag.setGlobalConfig(gc);
+
+        //模板配置
+        //使用freemarker模板引擎
         ag.setTemplateEngine(new FreemarkerTemplateEngine());
-        String projectPath = System.getProperty("user.dir");
-        System.out.println(projectPath);
         //自定义模板路径
         TemplateConfig templateConfig = new TemplateConfig()
                 .setEntity("/templates/mybatisCodeGenerator/entity.java")
@@ -51,41 +71,21 @@ public class CodeGenerator {
                 .setService("/templates/mybatisCodeGenerator/service.java")
                 .setServiceImpl("/templates/mybatisCodeGenerator/serviceImpl.java")
                 .setController("/templates/mybatisCodeGenerator/controller.java");
-
-        //配置自定义模板
         ag.setTemplate(templateConfig);
-
-        // 全局配置
-        GlobalConfig gc = new GlobalConfig();
-        gc.setOutputDir(System.getProperty("user.dir") + "/pure-module1/src/main/java");
-        gc.setAuthor("lyf");
-        //生成后是否打开资源管理器
-        gc.setOpen(false);
-        //重新生成时是否覆盖原文件
-        gc.setFileOverride(true);
-        //去掉service接口的首字母I
-        gc.setServiceName("%Service");
-        //开启实体属性Swagger2注解
-        gc.setSwagger2(true);
-        ag.setGlobalConfig(gc);
 
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
-        dsc.setUrl("jdbc:mysql:///mybatis?characterEncoding=utf-8&useSSL=false&useUnicode=true&autoReconnect=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true");
-        dsc.setDriverName("com.mysql.cj.jdbc.Driver");
-        dsc.setUsername("root");
-        dsc.setPassword("root");
-        dsc.setDbType(DbType.MYSQL);
+        dsc.setUrl(url);
+        dsc.setDriverName(driverName);
+        dsc.setUsername(userName);
+        dsc.setPassword(password);
+        dsc.setDbType(dbType);
         ag.setDataSource(dsc);
 
         // 包配置
         PackageConfig pc = new PackageConfig();
         pc.setModuleName(scanner("模块名"));
-        pc.setParent("com.lyf");
-        pc.setEntity("entity");
-        pc.setMapper("mapper");
-        pc.setService("service");
-        pc.setController("controller");
+        pc.setParent(parentPackage);
         ag.setPackageInfo(pc);
 
 
@@ -104,26 +104,37 @@ public class CodeGenerator {
             }
         });*/
 
-        // 策略配置
+        //策略配置
         StrategyConfig strategy = new StrategyConfig();
-        // 要映射的表名
-        strategy.setInclude(scanner("表名，如有多个请用英文逗号分割").split(","));
-        // 生成实体类时去掉表前缀_
-        strategy.setTablePrefix(pc.getModuleName() + "_");
-        // 表名映射到实体类名的命名策略
+        //要映射的表名
+        strategy.setInclude(scanner("表名，如有多个请用英文逗号分割").split(","))
+                //去掉表前缀_
+                .setTablePrefix(pc.getModuleName() + "_");
+        //表名生成策略：下划线转驼峰
         strategy.setNaming(NamingStrategy.underline_to_camel);
-        // 字段名映射到实体类属性名的命名策略
+        //表字段生成策略：下划线转驼峰
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);
-        // 公共父类
-//        strategy.setSuperEntityClass("你自己的父类实体,没有就不用设置!");
-//        strategy.setSuperControllerClass("你自己的父类控制器,没有就不用设置!");
-        // 生成lombok注解
+        //公共父类
+//        strategy.setSuperEntityClass("com.apa7.ms.common.core.entity.BaseEntity");
+//        strategy.setSuperMapperClass("com.apa7.ms.common.service.mapper.BaseMp");
+//        strategy.setSuperServiceClass("com.apa7.ms.common.core.service.BaseService");
+//        strategy.setSuperServiceImplClass("com.apa7.ms.common.service.service.impl.BaseServiceImpl");
+//        strategy.setSuperControllerClass("");
+        //实体类生成lombok注解
         strategy.setEntityLombokModel(true);
-        // restful api风格控制器
-        strategy.setRestControllerStyle(true);
-
+        //restful api风格控制器
+//        strategy.setRestControllerStyle(false);
+        strategy.setChainModel(true);
+        // 生成实体类字段注解
+//        strategy.setVersionFieldName("version");
+//        strategy.setLogicDeleteFieldName("deleted");
+//        strategy.setTableFillList(Arrays.asList(
+//                new TableFill("update_time", FieldFill.UPDATE),
+//                new TableFill("create_time", FieldFill.INSERT)
+//        ));
         ag.setStrategy(strategy);
         ag.execute();
+
     }
 
 }
