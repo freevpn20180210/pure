@@ -1,77 +1,44 @@
 package com.lyf.util;
 
 import com.baomidou.mybatisplus.annotation.DbType;
-import com.baomidou.mybatisplus.core.exceptions.MybatisPlusException;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
+import com.baomidou.mybatisplus.generator.InjectionConfig;
 import com.baomidou.mybatisplus.generator.config.*;
+import com.baomidou.mybatisplus.generator.config.po.TableFill;
+import com.baomidou.mybatisplus.generator.config.po.TableInfo;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
-import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-// 演示例子，执行 main 方法控制台输入模块表名回车自动生成对应项目目录中
 public class CodeGenerator {
 
+    //数据库配置
     private static String url = "jdbc:mysql:///mybatis?characterEncoding=utf-8&useSSL=false&useUnicode=true&autoReconnect=true&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true";
     private static String driverName = "com.mysql.cj.jdbc.Driver";
     private static String userName = "root";
     private static String password = "root";
     private static DbType dbType = DbType.MYSQL;
 
-    private static String parentPackage = "com.lyf";
+    //表名,如有多个用英文逗号分割
+    private static String tableName = "user";
+    //项目模块名
+    private static String projectModuleName = "pure-module1";
+    //业务模块名
+    private static String bizModuleName = "user";
+    //包名
+    private static String parentPackage = "com/lyf";
+    //作者
+    private static String author = "lyf";
 
-    /**
-     * <p>
-     * 读取控制台内容
-     * </p>
-     */
-    public static String scanner(String tip) {
-        Scanner scanner = new Scanner(System.in);
-        StringBuilder sb = new StringBuilder();
-        sb.append("请输入" + tip + "：");
-        System.out.println(sb.toString());
-        if (scanner.hasNext()) {
-            String ipt = scanner.next();
-            if (StringUtils.isNotBlank(ipt)) {
-                return ipt;
-            }
-        }
-        throw new MybatisPlusException("请输入正确的" + tip + "！");
-    }
-
+    /*********************************************以下固定配置***************************************************/
     public static void main(String[] args) {
         // 代码生成器
         AutoGenerator ag = new AutoGenerator();
-
-        //全局配置
-        GlobalConfig gc = new GlobalConfig();
-        //输出文件夹
-        gc.setOutputDir(System.getProperty("user.dir") + "/pure-module1/src/main/java");
-        //设置作者名
-        gc.setAuthor("lyf");
-        //生成后是否打开资源管理器--否
-        gc.setOpen(false);
-        //重新生成时是否覆盖原文件--是
-        gc.setFileOverride(true);
-        //去掉service接口的首字母I
-        gc.setServiceName("%Service");
-        //开启实体属性Swagger2注解
-        gc.setSwagger2(true);
-        ag.setGlobalConfig(gc);
-
-        //模板配置
-        //使用freemarker模板引擎
-        ag.setTemplateEngine(new FreemarkerTemplateEngine());
-        //自定义模板路径
-        TemplateConfig templateConfig = new TemplateConfig()
-                .setEntity("/templates/mybatisCodeGenerator/entity.java")
-                .setMapper("/templates/mybatisCodeGenerator/mapper.java")
-                .setXml("/templates/mybatisCodeGenerator/mapper.xml")
-                .setService("/templates/mybatisCodeGenerator/service.java")
-                .setServiceImpl("/templates/mybatisCodeGenerator/serviceImpl.java")
-                .setController("/templates/mybatisCodeGenerator/controller.java");
-        ag.setTemplate(templateConfig);
 
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
@@ -82,56 +49,108 @@ public class CodeGenerator {
         dsc.setDbType(dbType);
         ag.setDataSource(dsc);
 
-        // 包配置
-        PackageConfig pc = new PackageConfig();
-        pc.setModuleName(scanner("模块名"));
-        pc.setParent(parentPackage);
-        ag.setPackageInfo(pc);
+        //全局配置
+        GlobalConfig gc = new GlobalConfig()
+                //设置作者名
+                .setAuthor(author)
+                //设置输出文件夹
+                .setOutputDir(System.getProperty("user.dir") + "/" + projectModuleName + "/src/main/java/")
+                //生成后是否打开资源管理器--否
+                .setOpen(false)
+                //重新生成时是否覆盖原文件--是
+                .setFileOverride(true)
+                //开启实体属性Swagger2注解--是
+                .setSwagger2(true)
+                //开启xml通用查询映射结果--是
+                .setBaseResultMap(true)
+                //开启xml通用查询结果列--是
+                .setBaseColumnList(true)
+                //自定义生成文件命名
+                .setEntityName("%s")
+                .setMapperName("%sMapper")
+                .setXmlName("%sMapper")
+                .setServiceName("%sService")
+                .setServiceImplName("%sServiceImpl")
+                .setControllerName("%sController");
+        ag.setGlobalConfig(gc);
 
+        //模板配置
+        //使用freemarker模板引擎
+//        ag.setTemplateEngine(new FreemarkerTemplateEngine());
+        //自定义模板路径
+        TemplateConfig templateConfig = new TemplateConfig()
+                .setEntity("/templates/mybatisCodeGenerator/entity.java")
+                .setMapper("/templates/mybatisCodeGenerator/mapper.java")
+                .setXml("/templates/mybatisCodeGenerator/mapper.xml")
+                .setService("/templates/mybatisCodeGenerator/service.java")
+                .setServiceImpl("/templates/mybatisCodeGenerator/serviceImpl.java")
+                .setController("/templates/mybatisCodeGenerator/controller.java");
+        ag.setTemplate(templateConfig);
 
-     /*   // 如果模板引擎是 freemarker
-        String templatePath = "/templates/mapper.xml.ftl";
-
+        // 注入自定义配置
+        InjectionConfig cfg = new InjectionConfig() {
+            @Override
+            public void initMap() {
+                Map<String, Object> map = new HashMap<>();
+                map.put("vo", "vo");
+                this.setMap(map);
+            }
+        };
         // 自定义输出配置
-        List<FileOutConfig> focList = new ArrayList<>();
-        // 自定义配置会被优先输出
-        focList.add(new FileOutConfig(templatePath) {
+        List<FileOutConfig> fileOutConfigs = new ArrayList<>();
+        // 创建Vo对象
+        fileOutConfigs.add(new FileOutConfig("/templates/mybatisCodeGenerator/vo.java.vm") {
             @Override
             public String outputFile(TableInfo tableInfo) {
-                // 自定义输出文件名 ， 如果你 Entity 设置了前后缀、此处注意 xml 的名称会跟着发生变化！！
-                return projectPath + "/src/main/resources/mapper/" + pc.getModuleName()
-                        + "/" + tableInfo.getEntityName() + "Mapper" + StringPool.DOT_XML;
+                return System.getProperty("user.dir") + "/" + projectModuleName + "/src/main/java/" + parentPackage + "/" + bizModuleName + "/vo/" + tableInfo.getEntityName() + "VO" + StringPool.DOT_JAVA;
             }
-        });*/
+        });
+        cfg.setFileOutConfigList(fileOutConfigs);
+        ag.setCfg(cfg);
+
+        // 包配置
+        PackageConfig pc = new PackageConfig();
+        pc.setModuleName(bizModuleName);
+        pc.setParent(parentPackage);
+        ag.setPackageInfo(pc);
 
         //策略配置
         StrategyConfig strategy = new StrategyConfig();
         //要映射的表名
-        strategy.setInclude(scanner("表名，如有多个请用英文逗号分割").split(","))
-                //去掉表前缀_
-                .setTablePrefix(pc.getModuleName() + "_");
+        strategy.setInclude(tableName.split(","));
+        //去掉表前缀_
+        strategy.setTablePrefix(pc.getModuleName() + "_");
         //表名生成策略：下划线转驼峰
         strategy.setNaming(NamingStrategy.underline_to_camel);
         //表字段生成策略：下划线转驼峰
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);
+        //controller是否需要@RestController注解
+        strategy.setRestControllerStyle(true);
+        //开启lombok模型
+        strategy.setEntityLombokModel(true);
+        //开启链式调用
+        strategy.setChainModel(true);
+        //设置逻辑删除字段
+        strategy.setLogicDeleteFieldName("deleted");
+        //设置乐观锁版本号字段
+        strategy.setVersionFieldName("version");
+        //设置自动填充字段
+        List<TableFill> list = new ArrayList<>();
+        list.add(new TableFill("deleted", FieldFill.INSERT));
+        list.add(new TableFill("version", FieldFill.INSERT));
+        list.add(new TableFill("status", FieldFill.INSERT));
+        list.add(new TableFill("file_uuid", FieldFill.INSERT));
+        list.add(new TableFill("creator_id", FieldFill.INSERT));
+        list.add(new TableFill("create_time", FieldFill.INSERT));
+        list.add(new TableFill("updater_id", FieldFill.UPDATE));
+        list.add(new TableFill("update_time", FieldFill.UPDATE));
+        strategy.setTableFillList(list);
         //公共父类
-//        strategy.setSuperEntityClass("com.apa7.ms.common.core.entity.BaseEntity");
+        strategy.setSuperEntityClass("com.lyf.base.entity.BaseEntity");
 //        strategy.setSuperMapperClass("com.apa7.ms.common.service.mapper.BaseMp");
 //        strategy.setSuperServiceClass("com.apa7.ms.common.core.service.BaseService");
 //        strategy.setSuperServiceImplClass("com.apa7.ms.common.service.service.impl.BaseServiceImpl");
-//        strategy.setSuperControllerClass("");
-        //实体类生成lombok注解
-        strategy.setEntityLombokModel(true);
-        //restful api风格控制器
-//        strategy.setRestControllerStyle(false);
-        strategy.setChainModel(true);
-        // 生成实体类字段注解
-//        strategy.setVersionFieldName("version");
-//        strategy.setLogicDeleteFieldName("deleted");
-//        strategy.setTableFillList(Arrays.asList(
-//                new TableFill("update_time", FieldFill.UPDATE),
-//                new TableFill("create_time", FieldFill.INSERT)
-//        ));
+        strategy.setSuperControllerClass("com.lyf.base.entity.BaseController");
         ag.setStrategy(strategy);
         ag.execute();
 

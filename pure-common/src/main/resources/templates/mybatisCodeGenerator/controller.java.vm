@@ -1,8 +1,5 @@
 package ${package.Controller};
-
-
 import org.springframework.web.bind.annotation.RequestMapping;
-
 #if(${restControllerStyle})
 import org.springframework.web.bind.annotation.RestController;
 #else
@@ -11,7 +8,16 @@ import org.springframework.stereotype.Controller;
 #if(${superControllerClassPackage})
 import ${superControllerClassPackage};
 #end
-
+#if(${swagger2})
+import lombok.extern.slf4j.Slf4j;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
+#end
+import com.lyf.base.vo.Result;
+import org.springframework.web.bind.annotation.*;
+import ${package.Entity}.${entity};
+import ${package.Service}.${table.serviceName};
 /**
  * <p>
  * $!{table.comment} 前端控制器
@@ -25,17 +31,41 @@ import ${superControllerClassPackage};
 #else
 @Controller
 #end
-@RequestMapping("#if(${package.ModuleName})/${package.ModuleName}#end/#if(${controllerMappingHyphenStyle})${controllerMappingHyphen}#else${table.entityPath}#end")
-#if(${kotlin})
-class ${table.controllerName}#if(${superControllerClass}) : ${superControllerClass}()#end
-
-#else
+@RequestMapping("#if(${package.ModuleName})#end#if(${controllerMappingHyphenStyle})${controllerMappingHyphen}#else${table.entityPath}#end")
+#if(${swagger2})
+@Slf4j
+@Api(tags = "${table.comment}-Controller")
+#end
 #if(${superControllerClass})
 public class ${table.controllerName} extends ${superControllerClass} {
 #else
 public class ${table.controllerName} {
 #end
+    private ${table.serviceName} ${table.serviceName.substring(0,1).toLowerCase()}${table.serviceName.substring(1)};
 
+    @ApiOperation("${table.comment}--列表")
+    @PostMapping("list")
+    public Result list(){
+        return Result.OK(${table.serviceName.substring(0,1).toLowerCase()}${table.serviceName.substring(1)}.list());
+    }
+
+    @ApiOperation("${table.comment}--详情")
+    @ApiImplicitParam(name = "id", value = "${table.comment}id主键", dataType = "Long", required = true)
+    @GetMapping("get")
+    public Result getById(Long userId){
+        return Result.OK(${table.serviceName.substring(0,1).toLowerCase()}${table.serviceName.substring(1)}.getById(userId));
+    }
+
+    @ApiOperation("新增/保存")
+    @PostMapping("save")
+    @ResponseBody
+    public Result saveUpdate(User user){
+        if (${entity}Vo.getId() == null) {
+            ${table.serviceName}.save(${entity});
+        } else {
+            ${table.serviceName}.update(${entity});
+        }
+        return Result.OK(userService.save(user));
+    }
 }
 
-#end
