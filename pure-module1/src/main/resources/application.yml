@@ -29,5 +29,3 @@ logging:
   level:
     com.lyf.mapper: trace
 
-mybatis-plus:
-  check-config-location:

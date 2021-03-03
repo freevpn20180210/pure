@@ -38,9 +38,9 @@ public class BaseEntity implements Serializable {
     protected Integer deleted;
 
     /**
-     * 版本号
+     * 版本号(乐观锁)
      */
-    @ApiModelProperty(value = "版本号", hidden = true)
+    @ApiModelProperty(value = "版本号(乐观锁)", hidden = true)
     @TableField(value = "version", fill = FieldFill.INSERT)
     @Version
     protected Integer version;

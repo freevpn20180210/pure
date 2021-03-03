@@ -2,7 +2,6 @@ package com.lyf.util;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.InjectionConfig;
 import com.baomidou.mybatisplus.generator.config.*;
@@ -10,10 +9,18 @@ import com.baomidou.mybatisplus.generator.config.po.TableFill;
 import com.baomidou.mybatisplus.generator.config.po.TableInfo;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+/**
+ * mybatis-plus代码生成器
+ *
+ * @author lyf
+ * @since 2021-03-03
+ */
 
 public class CodeGenerator {
 
@@ -31,16 +38,16 @@ public class CodeGenerator {
     //业务模块名
     private static String bizModuleName = "user";
     //包名
-    private static String parentPackage = "com/lyf";
+    private static String parentPackage = "com.lyf";
     //作者
     private static String author = "lyf";
 
     /*********************************************以下固定配置***************************************************/
     public static void main(String[] args) {
-        // 代码生成器
+        //代码生成器
         AutoGenerator ag = new AutoGenerator();
 
-        // 数据源配置
+        //数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
         dsc.setUrl(url);
         dsc.setDriverName(driverName);
@@ -75,8 +82,6 @@ public class CodeGenerator {
         ag.setGlobalConfig(gc);
 
         //模板配置
-        //使用freemarker模板引擎
-//        ag.setTemplateEngine(new FreemarkerTemplateEngine());
         //自定义模板路径
         TemplateConfig templateConfig = new TemplateConfig()
                 .setEntity("/templates/mybatisCodeGenerator/entity.java")
@@ -87,7 +92,7 @@ public class CodeGenerator {
                 .setController("/templates/mybatisCodeGenerator/controller.java");
         ag.setTemplate(templateConfig);
 
-        // 注入自定义配置
+        //自定义配置
         InjectionConfig cfg = new InjectionConfig() {
             @Override
             public void initMap() {
@@ -96,16 +101,36 @@ public class CodeGenerator {
                 this.setMap(map);
             }
         };
-        // 自定义输出配置
+        //自定义输出配置
         List<FileOutConfig> fileOutConfigs = new ArrayList<>();
         // 创建Vo对象
         fileOutConfigs.add(new FileOutConfig("/templates/mybatisCodeGenerator/vo.java.vm") {
             @Override
             public String outputFile(TableInfo tableInfo) {
-                return System.getProperty("user.dir") + "/" + projectModuleName + "/src/main/java/" + parentPackage + "/" + bizModuleName + "/vo/" + tableInfo.getEntityName() + "VO" + StringPool.DOT_JAVA;
+                return System.getProperty("user.dir") + "/" + projectModuleName + "/src/main/java/"
+                        + parentPackage.replace(".", "/")
+                        + "/" + bizModuleName
+                        + "/vo/" + tableInfo.getEntityName() + "Vo.java";
             }
         });
         cfg.setFileOutConfigList(fileOutConfigs);
+        //自定义覆盖配置,只覆盖Entity类
+        cfg.setFileCreate((configBuilder, fileType, filePath) -> {
+            File file = new File(filePath);
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                return true;
+            } else {
+                String fileName = file.getName();
+                //如果是文件名是以这些字符串作为后缀结束的,不覆盖
+//                return !(fileName.endsWith("Controller.java")
+//                        || fileName.endsWith("Mapper.java") || fileName.endsWith("Mapper.xml")
+//                        || fileName.endsWith("Service.java") || fileName.endsWith("ServiceImpl.java")
+//                        || fileName.endsWith("Vo.java"));
+                return true;
+
+            }
+        });
         ag.setCfg(cfg);
 
         // 包配置
@@ -148,9 +173,9 @@ public class CodeGenerator {
         //公共父类
         strategy.setSuperEntityClass("com.lyf.base.entity.BaseEntity");
 //        strategy.setSuperMapperClass("com.apa7.ms.common.service.mapper.BaseMp");
-//        strategy.setSuperServiceClass("com.apa7.ms.common.core.service.BaseService");
+        strategy.setSuperServiceClass("com.lyf.base.service.BaseService");
 //        strategy.setSuperServiceImplClass("com.apa7.ms.common.service.service.impl.BaseServiceImpl");
-        strategy.setSuperControllerClass("com.lyf.base.entity.BaseController");
+        strategy.setSuperControllerClass("com.lyf.base.controller.BaseController");
         ag.setStrategy(strategy);
         ag.execute();
 

@@ -1,4 +1,4 @@
-package ${package.Entity}.vo;
+package ${package.Entity.replace("entity","vo")};
 
 #if(${swagger2})
 import io.swagger.annotations.ApiModel;
@@ -6,31 +6,34 @@ import io.swagger.annotations.ApiModelProperty;
 #end
 #if(${entityLombokModel})
 import lombok.Data;
-#end
+import lombok.EqualsAndHashCode;
 #if(${chainModel})
 import lombok.experimental.Accessors;
 #end
-import java.util.List;
+#end
 import ${package.Entity}.${entity};
 
 /**
- * <p>
- * $!{table.comment}VO
- * </p>
- *
+ * $!{table.comment}Vo
  * @author ${author}
  * @since ${date}
  */
+#if(${swagger2})
+@ApiModel(value="${entity}Vo对象", description="$!{table.comment}Vo")
+#end
 #if(${entityLombokModel})
 @Data
-    #if(${chainModel})
-    @Accessors(chain = true)
-    #end
+#if(${superEntityClass})
+@EqualsAndHashCode(callSuper = true)
+#else
+@EqualsAndHashCode(callSuper = false)
 #end
-#if(${swagger2})
-@ApiModel(value="${entity}VO对象", description="$!{table.comment}")
+#if(${chainModel})
+@Accessors(chain = true)
 #end
-public class ${entity}VO extends ${entity} {
+#end
+public class ${entity}Vo extends ${entity} {
+
     private static final long serialVersionUID = 1L;
 
 }

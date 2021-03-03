@@ -1,4 +1,4 @@
-package com.lyf.base.entity;
+package com.lyf.base.controller;
 
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
